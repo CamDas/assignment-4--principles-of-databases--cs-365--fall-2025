@@ -162,6 +162,28 @@ app.get(`/update-a-db-record`, (req, res) => {
 });
 
 /*
+ * This router handles POST requests to
+ * http://localhost:3000/update-a-db-record/
+ */
+app.post(`/update-a-db-record`, (req, res) => {
+    const { name, password } = req.body;
+
+    db.collection(dbCollection).updateOne(
+        { name: name },
+        { $set: { password: password } },
+        (err) => {
+            if (err) {
+                return console.log(err);
+            }
+
+            console.log(`Updated password for user:`, name);
+            res.redirect(`/read-a-db-record`);
+        }
+    );
+});
+
+
+/*
  * This router handles GET requests to
  * http://localhost:3000/delete-a-db-record/
  */
@@ -170,4 +192,24 @@ app.get(`/delete-a-db-record`, (req, res) => {
         res.render(`delete-a-record-in-database.njk`,
             {mongoDBArray: arrayObject});
     });
+});
+
+/*
+ * This router handles POST requests to
+ * http://localhost:3000/delete-a-db-record/
+ */
+app.post(`/delete-a-db-record`, (req, res) => {
+    const { name } = req.body;
+
+    db.collection(dbCollection).deleteOne(
+        { name: name },
+        (err) => {
+            if (err) {
+                return console.log(err);
+            }
+
+            console.log(`Deleted user:`, name);
+            res.redirect(`/read-a-db-record`);
+        }
+    );
 });
