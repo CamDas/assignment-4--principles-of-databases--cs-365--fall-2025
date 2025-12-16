@@ -166,20 +166,26 @@ app.get(`/update-a-db-record`, (req, res) => {
  * http://localhost:3000/update-a-db-record/
  */
 app.post(`/update-a-db-record`, (req, res) => {
-    const { name, password } = req.body;
+    let nameFromForm = req.body.name;
+
+    console.log(nameFromForm);
+    console.log(req.body);
 
     db.collection(dbCollection).updateOne(
-        { name: name },
-        { $set: { password: password } },
-        (err) => {
+        { name: nameFromForm },
+        { $set: {"password": req.body.password} }
+    ).then(() => {
+        db.collection(dbCollection).find().toArray((err, arrayObject) => {
             if (err) {
                 return console.log(err);
-            }
+            } else {
+                console.log(
+                    `Updated one record into Mongo via an HTML form using POST.\n`);
 
-            console.log(`Updated password for user:`, name);
-            res.redirect(`/read-a-db-record`);
-        }
-    );
+                res.render(`read-from-database.njk`, {mongoDBArray: arrayObject});
+            }
+        });
+    }) ;
 });
 
 
@@ -199,17 +205,19 @@ app.get(`/delete-a-db-record`, (req, res) => {
  * http://localhost:3000/delete-a-db-record/
  */
 app.post(`/delete-a-db-record`, (req, res) => {
-    const { name } = req.body;
+    let nameFromForm = req.body.name;
 
-    db.collection(dbCollection).deleteOne(
-        { name: name },
-        (err) => {
-            if (err) {
-                return console.log(err);
-            }
+    db.collection(dbCollection).deleteOne({ name: nameFromForm })
+        .then(() => {
+            db.collection(dbCollection).find().toArray((err, arrayObject) => {
+                if (err) {
+                    return console.log(err);
+                } else {
+                    console.log(`User requested the resource ` +
+                        colors.green, `http://${HOST}:${port}/delete-a-db-record`, colors.reset);
 
-            console.log(`Deleted user:`, name);
-            res.redirect(`/read-a-db-record`);
-        }
-    );
+                    res.render(`read-from-database.njk`, {mongoDBArray: arrayObject});
+                }
+            });
+        });
 });
